@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+    <title>虚拟展厅</title>
+    <script src="./util/Flexble/index.js"></script>
+    <script src="./util/html2canvas/index.js"></script>
+    <!-- 使用live-cat-library 浏览器引入umd模块方式接入jssdk -->
+    <script src="https://cdn.jsdelivr.net/npm/live-cat-library@0.2.5/live-cat-library.umd.min.js"></script>
+    <!-- axios -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.js"></script>
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        user-select: none;
+        overflow: hidden;
+        /* background: #000; */
+    }
+
+    #app {
+        /* transform-origin: 0 0;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transition: 0.3s; */
+        z-index: inherit;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        position: relative;
+        /* background: url('./image/step/1.png') no-repeat;
+        background-size: 100% 100%; */
+        /* transform: scale(1.1); */
+    }
+
+    #app img {
+        /* width: 100%; */
+        /* height: 100%; */
+        /* position: absolute; */
+        /* z-index: -20; */
+    }
+
+    #login {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 5;
+        width: 100%;
+        height: 100%;
+        /* background: url('./image/BJ@2x.png') no-repeat;
+        background-size: 100% 100%; */
+    }
+
+    #login>img {
+        width: 7.5rem;
+        /* width: 100%; */
+        height: auto;
+        z-index: 4;
+    }
+
+    #login_input {
+        width: 6.51rem;
+        height: 4.78rem;
+        z-index: 5;
+        position: absolute;
+        top: 6.2rem;
+        left: .57rem;
+        background: url('./image/DLBJ.png') no-repeat;
+        background-size: 100% 100%;
+    }
+
+    #login_input .inner_pwd {
+        position: absolute;
+        width: 5.14rem;
+        height: 1.12rem;
+        background: url('./image/YQBJ@2x.png') no-repeat;
+        background-size: 100% 100%;
+        top: .99rem;
+        left: .7rem;
+        display: flex;
+        /* justify-content: center; */
+        align-items: center;
+    }
+
+    #login_input .inner_pwd input {
+        width: 3.3rem;
+        height: .7rem;
+        font-size: .3rem;
+        letter-spacing: .08rem;
+        font-weight: bold;
+        padding-left: .2rem;
+        background: none;
+        outline: none;
+        border: none;
+        caret-color: #fff;
+        color: #fff;
+    }
+
+    #login_input .inner_pwd img {
+        margin-left: .43rem;
+        width: .74rem;
+        height: .82rem;
+    }
+
+    #login_input>p {
+        position: absolute;
+        top: 2.25rem;
+        left: .76rem;
+        color: #f00;
+        font-size: .25rem;
+        letter-spacing: .06rem;
+    }
+
+    #login_input .login_btn {
+        position: absolute;
+        width: 5.14rem;
+        height: 1.12rem;
+        background: url('./image/DLBJ@2x\(1\).png') no-repeat;
+        background-size: 100% 100%;
+        left: .72rem;
+        bottom: .91rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    #login_input .login_btn img {
+        width: 1.68rem;
+        height: .45rem;
+    }
+
+    .error_1 {
+        opacity: 0;
+    }
+
+    .error_2 {
+        opacity: 0;
+    }
+
+
+
+    #container {
+        color: #000;
+        font-size: 25px;
+        font-family: 'blod';
+        justify-content: center;
+        align-items: center;
+        width: inherit;
+        height: 100%;
+        z-index: 4;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: none;
+        /* background: #f90; */
+    }
+
+    #player-shell {
+        width: inherit !important;
+        height: inherit !important;
+    }
+
+    #tooltip {
+        z-index: 10;
+        position: absolute;
+        display: none;
+        width: 100%;
+        height: 100%;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* #tooltip img{
+        width: 100%;
+        height: 100%;
+    } */
+    .swiper {
+        position: relative;
+        /* position: fixed; */
+        /* top: 1rem; */
+        /* width: 7.5rem;
+        height: 16.24rem; */
+        width: 100%;
+        height: 100%;
+        z-index: 6 !important;
+        color: #ffff;
+        /* display: flex; */
+        justify-content: center;
+        align-items: center;
+        display: none;
+        background: #303031;
+        /* background: url('./image/step/1.png'); */
+        /* background-size: cover; */
+    }
+
+    .swiper>img {
+        /* position: fixed; */
+        /* left: 0; */
+        /* top: 0; */
+        /* width: 50%; */
+        /* height: 50%; */
+        /* transform: scale(0.89); */
+    }
+
+    .swiper .tool {
+        position: absolute;
+        left: -2.4rem;
+        transform: rotate(90deg);
+        width: 6.5rem;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .swiper .tool img {
+        width: 1.52rem;
+        height: .49rem;
+    }
+
+    .swiper .tool button {
+        padding: 0 8px;
+    }
+
+    #step {
+        width: 7.5rem;
+        height: 16.24rem;
+    }
+
+    /* 截图分享画面 */
+    #screen_shot {
+        position: absolute;
+        /* display: none; */
+        z-index: 998;
+        top: 50%;
+        left: 50%;
+        margin-left: -3rem;
+        margin-top: -3rem;
+        width: 6rem;
+        height: 6.02rem;
+        display: none;
+        opacity: 0;
+        /* transform: rotate(90deg); */
+        /* background: url('./image/yaoqing.png') no-repeat;
+        background-size: 100% 100%; */
+        /* justify-content: center;
+        flex-direction: column;
+        align-items: center; */
+
+    }
+
+    .finally {
+        position: absolute;
+        /* display: none; */
+        z-index: 15;
+        top: 50%;
+        left: 50%;
+        margin-left: -3rem;
+        margin-top: -3rem;
+        width: 6rem;
+        height: 6rem;
+        transform: rotate(90deg);
+    }
+
+    #screen_shot img:nth-child(1) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: inherit;
+        height: inherit;
+    }
+
+    #screen_shot .screen_img {
+        position: absolute;
+        z-index: 10;
+        width: 5.4rem;
+        height: 3rem;
+        margin: 0.3rem 0 0 0.3rem;
+        /* height: 3rem; */
+        /* background: url('./image/step/s.png') no-repeat; */
+        /* background-size: 100% 100%; */
+    }
+
+    #screen_shot .message {
+        position: absolute;
+        width: 5.4rem;
+        z-index: 10;
+        top: 3.75rem;
+        left: 0.3rem;
+        color: #Fff;
+    }
+
+    @font-face {
+        font-family: 'ali';
+        src: url('./font/ALIMAMASHUHEITI-BOLD.TTF');
+    }
+
+    @font-face {
+        font-family: 'pang';
+        src: url('./font/PANGMENZHENGDAOBIAOTITI-1.TTF');
+    }
+
+    #screen_shot .message p:nth-child(1) {
+        font-size: .38rem;
+        font-family: 'ali';
+        color: RGBA(198, 205, 255, 1);
+
+    }
+
+    #screen_shot .message p:nth-child(1) span {
+        font-family: 'pang';
+    }
+
+    #screen_shot .message p:nth-child(2) {
+        font-size: .29rem;
+        font-family: 'ali';
+        margin-top: 0.05rem;
+    }
+
+
+    #shot {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        z-index: 999;
+        transform: rotate(90deg);
+    }
+
+    #sub {
+        position: absolute;
+        top: 100px;
+        right: 30px;
+        z-index: 999;
+        transform: rotate(90deg);
+    }
+
+    #share_dialog {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: none;
+        z-index: 20;
+        background-color: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(2px);
+        /* background: rgba(0,0,0,0); */
+    }
+
+    #share_dialog span {
+        position: absolute;
+        bottom: .4rem;
+        right: .8rem;
+        font-size: .4rem;
+        color: #f00;
+        transform: rotate(90deg);
+    }
+
+    #sub_dialog {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: none;
+        z-index: 20;
+        /* display: flex; */
+        justify-content: center;
+        align-items: center;
+        /* background: rgba(0,0,0,0.3); */
+    }
+
+    #sub_dialog span {
+        position: absolute;
+        bottom: .4rem;
+        right: .8rem;
+        font-size: .4rem;
+        color: #f00;
+        transform: rotate(90deg);
+    }
+
+
+    #sub_dialog img {
+        height: 500px;
+        /* transform: rotate(90deg); */
+        /* position: absolute; */
+
+    }
+
+    #getSize {
+        position: absolute;
+        top: 100px;
+        transform: rotate(90deg);
+        /* left: 100px; */
+    }
+
+    #text {
+        position: absolute;
+        transform: rotate(90deg);
+        left: 100px;
+        z-index: 999;
+    }
+
+    #loading {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* display: none; */
+
+    }
+
+    #loading p {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        /* width: 300px; */
+        /* text-align: center; */
+    }
+
+    #loading p span:nth-child(1) {
+        display: block;
+        width: .5rem;
+        height: .5rem;
+        background: #fff;
+        animation: identifier 1.5s ease infinite;
+    }
+
+    @keyframes identifier {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    #loading p span:nth-child(2) {
+        color: #fff;
+        margin-top: 10px;
+    }
+
+
+
+    #showdom {
+        z-index: 999;
+        position: absolute;
+    }
+
+    #sys {
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 999;
+        width: 100%;
+        height: 100%;
+        /* display: none; */
+    }
+
+    iframe {
+        /* width: inherit;
+        height: inherit; */
+        z-index: 999;
+        position: absolute;
+        top: 185px;
+        left: -200px;
+        width: 800px;
+        height: 340px;
+        transform: rotate(90deg);
+
+        /* width: 844px; */
+        /* height: 390px; */
+        /* transform: rotate(90deg); */
+    }
+</style>
+
+<body>
+    <div id="app">
+        <!-- <button onclick="showFrame()" id="showdom">显示</button> -->
+        <!-- http://101.42.153.159/ -->
+        <!-- <div id="sys" data-html2canvas-ignore="true">
+            <iframe src="http://192.168.2.152:8080/" id="iframe" frameborder='0'>
+            </iframe>
+        </div> -->
+        <!-- <button id="shot" onclick="shot()" >分享</button> -->
+
+        <div id="loading" data-html2canvas-ignore="true">
+            <p>
+                <span></span>
+                <span>努力加载中...</span>
+            </p>
+        </div>
+        <!-- <img src="./image/step/1.png" alt=""> -->
+        <div id="login" data-html2canvas-ignore="true">
+            <img src="./image/BJ@2x.png" alt="" class="imageDom">
+            <div id="login_input">
+                <div class="inner_pwd">
+                    <img src="./image/mima@2x.png" alt="">
+                    <input type="text" placeholder="请输入您的邀请码" onfocus="handleInput()" onblur="handleBlur()"
+                        onkeyup="value=value.replace(/[^\w\.\/]/ig,'')">
+                </div>
+                <p class="error_1">请输入9位数邀请码!</p>
+                <p class="error_2">邀请码错误!</p>
+                <div class="login_btn" onclick="submit()">
+                    <img src="./image/TEXT@2x.png" alt="">
+                </div>
+            </div>
+        </div>
+        <div id="tooltip" data-html2canvas-ignore="true">
+            <img src="./image/screen.jpeg" alt="">
+        </div>
+        <div class="swiper" data-html2canvas-ignore="true">
+            <!-- <button id="sub" onclick="subscribe()">预约</button> -->
+            <!-- <button id="getSize" onclick="getSize()">获取尺寸</button> -->
+            <!-- <p id="text">宽度:<span class="w"></span>高度:<span class="h"></span></p> -->
+            <img id="step" src="./image/step/1.png" alt="">
+            <div class="tool">
+                <img id="over" onclick="stepOver()" src="./image/step/stepBtn/tiaoguo.png" alt="">
+                <img id="back" onclick="stepBack()" src="./image/step/stepBtn/shangyiye.png" alt="">
+                <img id="next" onclick="stepNext()" src="./image/step/stepBtn/xiayibu.png" alt="">
+                <img id="start" onclick="stepOver()" src="./image/step/stepBtn/jinru.png" alt="">
+            </div>
+        </div>
+        <div id="container" data-html2canvas-ignore="true">
+        </div>
+        <div id="screen_shot">
+            <img src="./image/yaoqing.png" alt="">
+            <img class="screen_img" src="./image/step/s.png" alt="">
+            <div class="message">
+                <p class="player">游客<span class="random"></span></p>
+                <p>邀请你一起参观雄安元宇宙!</p>
+            </div>
+        </div>
+        <div id="share_dialog">
+            <img class="finally" src="" alt="">
+            <span onclick="screenShot_close()">×</span>
+        </div>
+        <div id="sub_dialog" data-html2canvas-ignore="true">
+            <img src="./image/yuyuema.png" alt="">
+            <span onclick="subscribe_close()">×</span>
+        </div>
+
+    </div>
+</body>
+<script src="./util/Fn/index.js"></script>
+<script src="./util/UeFn/index.js"></script>
+
+<script>
+    // getScale();
+    // function getSize(){
+    //     console.log(document.querySelector('.swiper').clientWidth)
+    //     console.log(document.querySelector('.swiper').clientHeight);
+    // }
+    // getContainerSize();
+    // document.onkeydown = function (e) {
+    //     var ev = window.event || e;
+    //     var code = ev.keyCode || ev.which;
+    //     if (code == 116) {
+    //         ev.keyCode ? ev.keyCode = 0 : ev.which = 0;
+    //         cancelBubble = true;
+    //         return false;
+    //     }
+    // }
+    // document.oncontextmenu = function () { return false };
+    // $(document).ready(function(){
+
+    // })
+    // function realod() {
+    //     var { search, href } = window.location;
+    //     href = href.replace(/&?t_reload=(d+)/g, '')
+    //     window.location.href = href + (search ? '&' : '?') + "t_reload=" + new Date().getTime()
+    // }
+    // realod();
+    // function showFrame() {
+    // window.open('http://192.168.2.152:3000/');
+    // var iframe = document.createElement('iframe');
+    // iframe.src = 'http://192.168.2.152:3000/';
+    // iframe.frameborder="0"
+    // document.body.appendChild(iframe);
+    // }
+    // function loadPage(){
+    //     document.getElementById('sys').contentWindow.location.reload(true);
+    // }
+    // var iframe = window.parent.document.getElementById('iframe');
+    // iframe.contentWindow.location.replace('http://192.168.2.152:3000/');
+    // setScale()
+    // //判断浏览器是否是微信浏览器
+    const checkIsWechatBrowser = () => {
+        return (
+            navigator.userAgent.toLowerCase().match(/MicroMessenger/i) ==
+            "micromessenger"
+        );
+    };
+
+    // //微信浏览器中打开H5隐藏顶部导航方法
+    const hidePageNavInWechatBrowser = () => {
+        //#ifdef H5
+        // let a = 1;
+        if (checkIsWechatBrowser()) {
+            // alert(a++);
+            // location.reload(false);
+            // console.log(123);
+            // return false;
+            // window.location.replace("")
+            // alert(123);
+            // let pageNav = document.getElementsByTagName("uni-page-head");
+            // if (pageNav && pageNav[0]) {
+            //     pageNav[0].style.display = "none";
+            // }
+        }
+        //#endif
+    };
+    hidePageNavInWechatBrowser();
+</script>
+
+</html>
